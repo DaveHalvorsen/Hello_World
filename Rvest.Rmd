@@ -1,0 +1,164 @@
+---
+title: "Rvest"
+author: "David_Halvorsen"
+date: "May 29, 2018"
+output: html_document
+---
+
+```{r}
+# I'm running along with the tutorial located http://blog.rstudio.com/2014/11/24/rvest-easy-web-scraping-with-r/
+# The course is called rvest: easy web scraping with R Hadley Wickham 2014-11-24
+# install Rvest
+install.packages("rvest")
+```
+
+```{r}
+# This grabs page html from the imdb lego page
+# The html command is deprecated. It needs to be run with 'read_html'
+library(rvest)
+lego_movie <- read_html("http://www.imdb.com/title/tt1490017/")
+```
+
+```{r}
+# This selects the rating from the movie page
+# .ratingValue span selector was picked with Selector Gadget
+lego_movie %>%
+  html_node(".ratingValue span") %>%
+  html_text() %>%
+  as.numeric()
+```
+
+```{r}
+# This grabs the cast names
+lego_movie %>%
+  html_nodes("#titleCast .itemprop span") %>%
+  html_text()
+```
+
+```{r}
+poster <- lego_movie %>%
+  html_nodes("#title-overview-widget img") %>%
+  html_attr("src")
+poster
+```
+
+
+```{r}
+# This code will generate an out of bounds error because the IMDB website no longer has a list
+# of forum posts on the main page. You need to click through to the forum.
+lego_movie %>%
+  html_nodes("table") %>%
+  .[[3]] %>%
+  html_table()
+```
+
+```{r}
+# This grabs the forum text
+lego_movie_forum <- read_html("https://www.imdb.com/title/tt1490017/reviews?ref_=tt_urv")
+```
+
+```{r}
+# The original tutorial page won't work because it's not a table anymore in the new format
+# I still did some datascrabing on this page
+lego_movie_forum %>%
+  html_nodes("a , .title") %>%
+  html_text()
+```
+
+```{r}
+# This is my first attempt at getting all of the download links for 23andMe public data that I found online
+# I've successfully selected the TEXT of the download links INSTEAD of the data :(
+public_SNP_data <- read_html("https://my.pgp-hms.org/public_genetic_data?data_type=23andMe")
+public_SNP_data %>%
+  html_nodes("td:nth-child(7) a") %>%
+  html_text()
+```
+
+```{r}
+# Can I get sample id with this method? YES! Okay, this is cool.
+# public_SNP_data <- read_html("https://my.pgp-hms.org/public_genetic_data?data_type=23andMe")
+# The whole piping request can be pushed into a label with a preemptive <-
+results=list() 
+datastuff <- public_SNP_data %>%
+html_nodes(".collection-column+ td a") %>%
+#html_nodes
+html_text() 
+# The profile names are helpful because they can be used to go to the user page and get the download links AND the BMI, height, phenotype data
+```
+
+```{r}
+# It's possible to select names from all of the patient labels!
+
+#library(dplyr)
+typeof(datastuff)
+datastuff[3]
+# There are 817 23andme datasets
+count(datastuff)
+for (label in datastuff){
+  print(paste("The label is", label))
+}
+```
+
+```{r}
+# The formatting for a link to the data repository is https://my.pgp-hms.org/profile/hu1A8C1E
+# This is string concatentaiton with the 3rd item from the list of patient sample names
+paste('https://my.pgp-hms.org/profile/', datastuff[3], sep='')
+# datastuff[3]
+```
+
+```{r}
+# It's possible to use a for loop to create all of the links
+for (label in datastuff){
+  print(paste('https://my.pgp-hms.org/profile/', label, sep=''))
+}
+```
+
+```{r}
+# This grabs gender, weight, height and skin color from a selected page
+# The code blocked by # DOES NOT have that table, so it doesn't work ... possible to have if/else to run through all links?
+# public_SNP_data <- read_html("https://my.pgp-hms.org/profile/hu91B695")
+public_SNP_data <- read_html("https://my.pgp-hms.org/profile/hu23502F")
+public_SNP_data %>%
+  html_nodes(".demographics tr+ tr td") %>%
+  html_text()
+```
+
+```{r}
+# This user has height and weight data in a sub-HTML page. This is how I grabbed that data:
+public_SNP_data <- read_html("https://my.pgp-hms.org/profile/hu91B695")
+public_SNP_data %>%
+  html_nodes(".ui-helper-hidden+ .ui-helper-hidden td") %>%
+  html_text()
+
+```
+
+```{r}
+hu1A8C1E <- read_html("https://my.pgp-hms.org/profile/hu1A8C1E")
+hu1A8C1E %>%
+  html_nodes("td:nth-child(6) a") %>%
+  html_text()
+```
+
+```{r}
+# My attempt to download the 23andMe data file
+  # there appear to be multiple selectors used throughout the data pages :(
+  # html_nodes(".profile-data a") %>%
+hu1A8C1E <- read_html("https://my.pgp-hms.org/profile/hu1A8C1E")
+hu1A8C1E %>%
+  html_node("td:nth-child(6) a") %>%
+  #html_attr('href') %>%
+  html_text()
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
