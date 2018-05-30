@@ -1,0 +1,148 @@
+---
+title: "Download_PGP"
+author: "David_Halvorsen"
+date: "May 29, 2018"
+output: html_document
+---
+
+```{r}
+install.packages('rvest')
+install.packages('rlist')
+```
+
+```{r}
+library(rvest)
+```
+
+```{r}
+library(rlist)
+public_SNP_data <- read_html("https://my.pgp-hms.org/public_genetic_data?data_type=23andMe")
+datastuff <- public_SNP_data %>%
+html_nodes(".collection-column+ td a") %>%
+#html_nodes
+html_text() 
+sample_profile_page <- c()
+for (label in datastuff){
+  current_item <- paste('https://my.pgp-hms.org/profile/', label, sep='')
+  list.append(sample_profile_page, current_item)
+  print(current_item)
+}
+```
+
+```{r}
+sample_profile_page
+```
+
+```{r}
+linkify <- function(label) {
+  paste('https://my.pgp-hms.org/profile/', label, sep='')
+}
+lapply(public_SNP_data, linkify)
+```
+
+```{r}
+
+
+public_SNP_data <- read_html("https://my.pgp-hms.org/public_genetic_data?data_type=23andMe")
+datastuff <- public_SNP_data %>%
+  html_nodes(css="td:nth-child(7) a")
+  
+  #html_text() 
+datastuff
+```
+
+```{r}
+datastuff[1]
+starting = regexpr('user_file', datastuff[1])
+paste("starting is ", starting)
+stopping = gregexpr('" ', datastuff[1])
+paste("stopping is ", stopping)
+```
+
+```{r}
+substr(datastuff[1], 10, 33)
+```
+
+
+```{r}
+# datastuff
+for (html_link in datastuff){
+  print(substr(html_link, 11, 33))
+  html_link <- substr(html_link, 11, 33)
+}
+```
+
+```{r}
+# This didn't work
+# download.file(https://my.pgp-hms.org/user_file/download/2)
+library(RCurl)
+URL <- "https://my.pgp-hms.org/user_file/download/3535"
+y <- getURL(URL)
+y
+```
+
+```{r}
+download.file('https://my.pgp-hms.org/user_file/download/3535', destfile = 'definitelyNOTpants')
+# download.file('https://my.pgp-hms.org/user_file/download/2', destfile = 'definitelypants')
+```
+
+
+
+```{r}
+# 937 long
+# length(datastuff)
+datastuff
+```
+
+```{r}
+# patient names
+.collection-column+ td a
+# download links
+td:nth-child(7) a
+```
+
+```{r}
+# Here's all the patient sample names
+#public_SNP_data <- read_html("https://my.pgp-hms.org/public_genetic_data?data_type=23andMe")
+test <- public_SNP_data %>%
+html_nodes(".collection-column+ td a") %>%
+#html_nodes
+html_text() 
+test[21]
+test
+```
+ 
+```{r}
+othertest <- public_SNP_data %>%
+html_nodes("td:nth-child(7) a") 
+#html_nodes
+#html_text() 
+typeof(othertest)
+othertest
+```
+ 
+```{r}
+# this doesn't work
+list3 = apply(cbind(test, othertest), 1, unlist)
+list3[[2]]
+# list3
+```
+
+```{r}
+test1 <- list(test, othertest)
+as.data.frame(test1)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
